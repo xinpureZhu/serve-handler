@@ -230,23 +230,42 @@
             </li>
           {{ } }}
         {{~}}
+
+        {{~it.files :value:index}}
+          {{ if (value.type == 'file') { }}
+            {{ if (!['png', 'jpg', 'jpeg', 'svg', 'webp', 'gif'].includes(value.ext.toLowerCase())) { }}
+              {{ if (['mp4', 'rmvb', 'avi'].includes(value.ext.toLowerCase())) { }}
+                <li>
+                  <a target="_blank" href="{{!value.relative}}" title="{{!value.title}}" class="{{!value.ext}}">{{!value.base}}</a>
+                  {{? value.size}}
+                    <i>{{!value.size}}</i>
+                  {{?}}
+                </li>
+              {{ } else { }}
+                <li>
+                  <a href="{{!value.relative}}" title="{{!value.title}}" class="{{!value.ext}}">{{!value.base}}</a>
+                  {{? value.size}}
+                    <i>{{!value.size}}</i>
+                  {{?}}
+                </li>
+              {{ } }}
+
+            {{ } }}
+          {{ } }}
+        {{~}}
       </ul>
     </main>
 
     <div class="my-gallery" itemscope itemtype="http://schema.org/ImageGallery">
       {{~it.files :value:index}}
-        {{ if (index != 0) { }}
-          {{ if (value.type == 'file') { }}
-            {{ if (value.ext.toLowerCase() == 'mp4') { }}
-              <a href="{{!value.relative}}" title="{{!value.title}}" class="{{!value.ext}}">{{!value.base}}</a>
-            {{ } else { }}
-              <figure itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
-                <a href="{{!value.relative}}" title="{{!value.title}}" class="{{!value.ext}}" itemprop="contentUrl" data-size="1920x1080">
-                    <img src="{{!value.relative}}" itemprop="thumbnail" alt="Image description" />
-                </a>
-                <figcaption itemprop="caption description">{{!value.base}}</figcaption>
-              </figure>
-            {{ } }}
+        {{ if (value.type == 'file') { }}
+          {{ if (['png', 'jpg', 'jpeg', 'svg', 'webp', 'gif'].includes(value.ext.toLowerCase())) { }}
+            <figure itemprop="associatedMedia" itemscope itemtype="http://schema.org/ImageObject">
+              <a href="{{!value.relative}}" title="{{!value.title}}" class="{{!value.ext}}" itemprop="contentUrl" data-size="1920x1080">
+                  <img src="{{!value.relative}}" itemprop="thumbnail" alt="{{!value.base}}" />
+              </a>
+              <figcaption itemprop="caption description">{{!value.base}}</figcaption>
+            </figure>
           {{ } }}
         {{ } }}
       {{~}}
