@@ -14,9 +14,35 @@ const contentDisposition = require('content-disposition');
 const isPathInside = require('path-is-inside');
 const parseRange = require('range-parser');
 
+const sharp = require('sharp');
+sharp.cache({memory: 4096, items: 200000, files: 20000});
+
+const imageCaches = {};
+
 // Other
 const directoryTemplate = require('./directory');
 const errorTemplate = require('./error');
+
+const imageTypes = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+
+const generateThumbnail = async image => {
+	const metadata = await sharp(image).metadata();
+	const {format, width, height} = metadata;
+
+	const buffer = await sharp(image)
+								  .resize(150, 150)
+								  .toBuffer();
+
+	const bufferString = buffer.toString('base64');
+	const thumbnail = `data:image/${format};base64,${bufferString}`;
+
+	return {
+		format,
+		width,
+		height,
+		thumbnail
+	};
+};
 
 const sourceMatches = (source, requestPath, allowSegments) => {
 	const keys = [];
@@ -425,6 +451,26 @@ const renderDirectory = async (current, acceptsJSON, handlers, methods, config, 
 			name: pathParts[index] + (isLast ? slashSuffix : '/'),
 			url: index === 0 ? '' : parents.join('/') + slashSuffix
 		});
+	}
+
+	for (let i = 0, fileLength = files.length; i < fileLength; i++) {
+		const file = files[i];
+		const {type, dir, base, ext} = file;
+
+		if (type !== 'file') {
+			continue;
+		}
+		if (ext && imageTypes.includes(ext.toLowerCase())) {
+			if (!imageCaches[`${dir}/${base}`]) {
+				imageCaches[`${dir}/${base}`] = await generateThumbnail(`${dir}/${base}`);
+			}
+
+			const {width, height, thumbnail} = imageCaches[`${dir}/${base}`];
+
+			file.width = width;
+			file.height = height;
+			file.thumbnail = thumbnail;
+		}
 	}
 
 	const spec = {
