@@ -331,6 +331,7 @@ const renderDirectory = async (current, acceptsJSON, handlers, methods, config, 
 	const excluded = [
 		'.DS_Store',
 		'.git',
+		'Thumbs.db',
 		...unlisted
 	];
 
@@ -365,6 +366,7 @@ const renderDirectory = async (current, acceptsJSON, handlers, methods, config, 
 			details.base += slashSuffix;
 			details.relative += slashSuffix;
 			details.type = 'directory';
+			details.mtimeMs = stats.mtimeMs;
 		} else {
 			if (canRenderSingle) {
 				return {
@@ -374,7 +376,7 @@ const renderDirectory = async (current, acceptsJSON, handlers, methods, config, 
 				};
 			}
 
-			details.ext = details.ext.split('.')[1] || 'txt';
+			details.ext = (details.ext.split('.')[1] || 'txt').toLowerCase();
 			details.type = 'file';
 
 			details.size = bytes(stats.size, {
